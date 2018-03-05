@@ -735,8 +735,13 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 					String containingObjectType = createdObjectTypes.get(parentId);
 //					CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,fieldHandlerType, null,containingObjectType, leakline);
 //					CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,fieldName, null,containingObjectType, leakline);
-					CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,fieldHandlerType+":"+fieldName, null,containingObjectType, leakline);
-					cascadingLeak.addObjectCreation(cascade);
+//					CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,fieldHandlerType+":"+fieldName, null,containingObjectType, leakline);
+					
+					CascadeObjectCreation cascade1 = new CascadeObjectCreation(id,parentId,null,fieldHandlerType, null,containingObjectType, leakline);
+					CascadeObjectCreation cascade2 = new CascadeObjectCreation(id,parentId,null,fieldName, null,fieldHandlerType, leakline);
+					
+					cascadingLeak.addObjectCreation(cascade1);
+					cascadingLeak.addObjectCreation(cascade2);
 					
 					parentId = Client.getDisplay().astview.getParentIdentifier(parentId);//get grandparent
 					parentLabelLoc = Client.getDisplay().astview.getVertexLabel(parentId);					
@@ -1084,10 +1089,12 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 				cascadingLeak.tag = Tag.F;
 				while(parentLabelLoc.equals("ObjectCreationExpr")) {
 					String containingObjectType = createdObjectTypes.get(parentId);
-					CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,reference_t+":"+method_name, null,containingObjectType, leakline);
+					CascadeObjectCreation cascade1 = new CascadeObjectCreation(id,parentId,null,reference_t, null,containingObjectType, leakline);
+					CascadeObjectCreation cascade2 = new CascadeObjectCreation(id,parentId,null,method_name, null,reference_t, leakline);
 //					CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,reference_t, null,containingObjectType, leakline);
 					//CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,fieldHandlerType+":"+fieldName, null,containingObjectType, leakline);
-					cascadingLeak.addObjectCreation(cascade);
+					cascadingLeak.addObjectCreation(cascade1);
+					cascadingLeak.addObjectCreation(cascade2);
 					
 					parentId = Client.getDisplay().astview.getParentIdentifier(parentId);//get grandparent
 					parentLabelLoc = Client.getDisplay().astview.getVertexLabel(parentId);
@@ -2004,10 +2011,18 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
         return combinedTypeSolver;
 	}
 	
-	public void updateKnowledgeGraph(Leak leak) {
+	public synchronized void updateKnowledgeGraph(Leak leak) {
 		new Thread(new Runnable() {
 		     public void run() {
 		 		Client.getDisplay().kgview.addCallEdge(leak);
+	 		    try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {					
+					e.printStackTrace();
+				} 
+
+
+		 		
 		     }
 		}).start();
 	}

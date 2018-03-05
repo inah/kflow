@@ -17,7 +17,6 @@ import org.graphstream.ui.view.Viewer;
 import org.graphstream.ui.view.ViewerListener;
 import org.graphstream.ui.view.ViewerPipe;
 
-import fmcr.leaks.detectors.CascadeObjectCreation;
 import fmcr.leaks.detectors.CascadeObjectCreationLeak;
 import fmcr.leaks.detectors.ClassCascadingObjectCreationLeak;
 import fmcr.leaks.detectors.ClassMethodArgAsObjectFieldReferenceLeak;
