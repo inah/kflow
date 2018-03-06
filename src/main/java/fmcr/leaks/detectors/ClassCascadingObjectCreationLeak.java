@@ -3,6 +3,7 @@ package fmcr.leaks.detectors;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import fmcr.main.Client;
 import fmcr.visitors.CodeVisitor;
 
 public class ClassCascadingObjectCreationLeak extends Leak{
@@ -17,6 +18,7 @@ public class ClassCascadingObjectCreationLeak extends Leak{
 		cascades = new LinkedList<CascadeObjectCreation>();
 		
 		tag = Tag.A;
+		this.setGroupId(Client.getDisplay().filecounter);
 	}
 	
 	

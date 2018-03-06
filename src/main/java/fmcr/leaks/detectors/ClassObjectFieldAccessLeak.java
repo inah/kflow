@@ -1,5 +1,7 @@
 package fmcr.leaks.detectors;
 
+import fmcr.main.Client;
+
 /**
  * This is
  * @author inah
@@ -20,6 +22,9 @@ public class ClassObjectFieldAccessLeak extends Leak{
 		this.fieldName = fieldName;
 		this.fieldType = fieldType;
 		this.setLeakLine(leakLine);
+		
+		this.tag = Tag.A;
+		this.setGroupId(Client.getDisplay().filecounter);
 	}
 
 	

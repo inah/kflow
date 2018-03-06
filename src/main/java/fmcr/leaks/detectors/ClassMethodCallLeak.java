@@ -2,6 +2,8 @@ package fmcr.leaks.detectors;
 
 import java.util.ArrayList;
 
+import fmcr.main.Client;
+
 /**
  * This is
  * @author inah
@@ -22,6 +24,7 @@ public class ClassMethodCallLeak extends MethodLeak{
 		this.setLeakLine(leakLine);
 		
 		tag = Tag.F;
+		this.setGroupId(Client.getDisplay().filecounter);
 	}
 
 	public String getHandlerType() {

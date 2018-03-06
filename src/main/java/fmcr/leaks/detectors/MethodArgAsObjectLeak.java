@@ -1,5 +1,7 @@
 package fmcr.leaks.detectors;
 
+import fmcr.main.Client;
+
 /**
  * This is
  * @author inah
@@ -16,6 +18,9 @@ public class MethodArgAsObjectLeak extends Leak{
 		this.setLeakLine(leakLine);
 		this.setParameterType(parameterType);
 		this.setPrameterName(parameterName);
+		
+		tag = Tag.A;
+		this.setGroupId(Client.getDisplay().filecounter);
 	}
 
 	public String getHandlerType() {

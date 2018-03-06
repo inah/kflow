@@ -1,6 +1,7 @@
 package fmcr.leaks.detectors;
 
 public abstract class Leak {
+	private int groupId; //all leaks from the same file belong to one unique group
 	private String leakLine;
 	private String nodeId;
 	private String nodeParentId;
@@ -48,6 +49,14 @@ public abstract class Leak {
 
 	public void setNodeParentId(String nodeParentId) {
 		this.nodeParentId = nodeParentId;
+	}
+
+	public int getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
 	}
 	
 }

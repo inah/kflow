@@ -59,6 +59,7 @@ public class Display extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 	public double zoom =1;
+	public int filecounter = 1; //increment by 1 after every java file that is analysed
 
 	public Display() {
 		try {
@@ -175,7 +176,6 @@ public class Display extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				clearSourceStatements();	
 				astview.setVisible(false);
-				kgview.clearGraph();
 			}
 
 		});
@@ -187,6 +187,7 @@ public class Display extends JFrame {
 		jb4.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				filecounter = 1;
 				analyseProgram();				
 			}
 
@@ -300,7 +301,6 @@ public class Display extends JFrame {
 	public KnowledgeGraphView kgview;
 	public void createKnowledgeGraphView() {
 		kgview = new KnowledgeGraphView();
-		KnowledgeGraphView.setKeyindex(0);
 	}
 	public void updateKnowledgeGraphView() {
 		kgview.revalidate();
@@ -427,7 +427,6 @@ public class Display extends JFrame {
 					if(loaded) {
 						astview.setVisible(true);
 						astview.clearGraph();
-						kgview.clearGraph();
 						Client.doCodeAnalysis();
 					}
 					else {

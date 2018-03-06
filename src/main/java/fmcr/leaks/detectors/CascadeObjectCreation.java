@@ -1,5 +1,7 @@
 package fmcr.leaks.detectors;
 
+import fmcr.main.Client;
+
 /**
  * This is
  * @author inah
@@ -21,6 +23,7 @@ public class CascadeObjectCreation extends Leak{
 		this.setLeakLine(leakLine);
 		
 		tag = Tag.A;
+		this.setGroupId(Client.getDisplay().filecounter);
 	}
 
 	
