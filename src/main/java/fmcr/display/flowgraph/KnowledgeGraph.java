@@ -32,7 +32,8 @@ public class KnowledgeGraph {
 	public static Graph getInstance() {
 		if(g == null) {
 			g = new Graph();
-			g.getNodeTable().addColumns(KNOWLEDGE_SCHEMA);	
+			g.getNodeTable().addColumns(NODE_SCHEMA);	
+			g.getEdgeTable().addColumns(EDGE_SCHEMA);
 		}
 		        
 		return g;
@@ -110,14 +111,19 @@ public class KnowledgeGraph {
 	}
 	
 
-	private void addCallEdge(String node1Name, String node2Name, Leak leak) {
+	private static void addCallEdge(String node1Name, String node2Name, Leak leak) {
 		Node node1 = includeNode(node1Name, leak);
 		Node node2 = includeNode(node2Name, leak);
 		
 		addEdge(node1, node2);
+		rnodes.add(node1);
+		rnodes.add(node2);
 	}
 	
-	public void addCallEdge(Leak r) {
+	private static ArrayList<Node> rnodes;
+	public static ArrayList<Node> addCallEdge(Leak r) {
+		rnodes = new ArrayList<Node>();
+		
 		if(r instanceof CascadeObjectCreationLeak) {
 			r  = (CascadeObjectCreationLeak)r;
 
@@ -262,7 +268,7 @@ public class KnowledgeGraph {
 			addCallEdge(node1Name,node2Name,r);			
 		}
 
-
+		return rnodes;
 	}
 		
 	public static void clearNodes() {
@@ -277,12 +283,16 @@ public class KnowledgeGraph {
 	public static final String LEAKS = "leaks";
 
 	/** Node table schema used for generated Graphs */
-	public static final Schema KNOWLEDGE_SCHEMA = new Schema();
+	public static final Schema NODE_SCHEMA = new Schema();
 	static {
-		KNOWLEDGE_SCHEMA.addColumn(LABEL, String.class, "");
-		KNOWLEDGE_SCHEMA.addColumn(NODESIZE, Double.class, 5);
-		KNOWLEDGE_SCHEMA.addColumn(EDGESIZE, Double.class, 1);
-		KNOWLEDGE_SCHEMA.addColumn(LEAKS, ArrayList.class, new ArrayList<Leak>());
+		NODE_SCHEMA.addColumn(LABEL, String.class, "");
+		NODE_SCHEMA.addColumn(NODESIZE, Double.class, 5);
+		NODE_SCHEMA.addColumn(LEAKS, ArrayList.class, new ArrayList<Leak>());
 
+	}
+	public static final Schema EDGE_SCHEMA = new Schema();
+	static {
+		EDGE_SCHEMA.addColumn(LABEL, String.class, "");
+		EDGE_SCHEMA.addColumn(EDGESIZE, Double.class, 1);
 	}
 }

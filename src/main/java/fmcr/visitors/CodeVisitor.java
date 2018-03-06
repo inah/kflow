@@ -2012,10 +2012,7 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 	}
 	
 	public synchronized void updateKnowledgeGraph(Leak leak) {
-		new Thread(new Runnable() {
-		     public void run() {
-//		 		Client.getDisplay().kgview.addCallEdge(leak);
-		     }
-		}).start();
+ 		Client.getDisplay().kgview.addLeaks(leak);
+
 	}
 }

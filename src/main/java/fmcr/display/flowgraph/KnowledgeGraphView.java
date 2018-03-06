@@ -9,21 +9,7 @@ import java.util.Iterator;
 
 import javax.swing.SwingUtilities;
 
-import fmcr.leaks.detectors.CascadeObjectCreationLeak;
-import fmcr.leaks.detectors.ClassCascadingObjectCreationLeak;
-import fmcr.leaks.detectors.ClassMethodArgAsObjectFieldReferenceLeak;
-import fmcr.leaks.detectors.ClassMethodArgAsObjectLeak;
-import fmcr.leaks.detectors.ClassMethodArgAsObjectMethodCallLeak;
-import fmcr.leaks.detectors.ClassMethodCallLeak;
-import fmcr.leaks.detectors.ClassObjectCreationLeak;
-import fmcr.leaks.detectors.ClassObjectFieldAccessLeak;
-import fmcr.leaks.detectors.ClassVariableAccessLeak;
 import fmcr.leaks.detectors.Leak;
-import fmcr.leaks.detectors.MethodArgAsObjectFieldReferenceLeak;
-import fmcr.leaks.detectors.MethodArgAsObjectLeak;
-import fmcr.leaks.detectors.MethodArgAsObjectMethodCallLeak;
-import fmcr.leaks.detectors.MethodCallLeak;
-import fmcr.leaks.detectors.ObjectFieldAccessLeak;
 import prefuse.Constants;
 import prefuse.Display;
 import prefuse.Visualization;
@@ -37,7 +23,6 @@ import prefuse.activity.Activity;
 import prefuse.controls.ControlAdapter;
 import prefuse.controls.PanControl;
 import prefuse.controls.ZoomControl;
-import prefuse.data.Graph;
 import prefuse.data.Node;
 import prefuse.render.DefaultRendererFactory;
 import prefuse.render.PolygonRenderer;
@@ -45,6 +30,7 @@ import prefuse.render.Renderer;
 import prefuse.render.ShapeRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
+import prefuse.util.collections.IntIterator;
 import prefuse.visual.AggregateItem;
 import prefuse.visual.AggregateTable;
 import prefuse.visual.VisualGraph;
@@ -52,7 +38,8 @@ import prefuse.visual.VisualItem;
 
 
 public class KnowledgeGraphView extends Display{
-
+	private static final long serialVersionUID = -4910589796925187366L;
+	
 	public static final String GRAPH = "graph";
 	public static final String NODES = "graph.nodes";
 	public static final String EDGES = "graph.edges";
@@ -125,13 +112,48 @@ public class KnowledgeGraphView extends Display{
 		addControlListener(new ZoomControl());
 		addControlListener(new PanControl());
 
+		//put action to repaint
+		ActionList repaint = new ActionList();
+		repaint.add(new RepaintAction());
+		m_vis.putAction("repaint", repaint);
+
 		// set things running
 		m_vis.run("layout");
 
 	}
 	
-	public void addLeaks(ArrayList<Leak> leaks) {
+	public void addLeaks(Leak leak) {
+		ArrayList<Node> resultantNodes = KnowledgeGraph.addCallEdge(leak);
 		
+		AggregateItem aitem = null;
+		IntIterator iter = at.rows();
+		while(iter.hasNext()){
+			AggregateItem aitem_ = (AggregateItem)iter.next();
+			int cid = (Integer)aitem_.get("id");
+			if(cid == leak.getGroupId()){
+				aitem =aitem_;
+				break;
+			}
+		}
+		if(aitem == null){
+			aitem = (AggregateItem)at.addItem();
+			aitem.setInt("id", leak.getGroupId());
+		}
+		 Iterator nodes = vg.nodes();
+		 while(nodes.hasNext()){
+			 VisualItem vitem = (VisualItem)nodes.next();
+			 for(Node node:resultantNodes){
+				 if(vitem.get(KnowledgeGraph.LABEL).equals(node.get(KnowledgeGraph.LABEL))){
+		             aitem.addItem(vitem);
+				 }
+			}			 
+		 }
+		
+		
+		m_vis.run("repaint");
+		
+		m_vis.run("color");
+		m_vis.run("layout");
 	}
 
 	VisualGraph vg;
@@ -147,16 +169,16 @@ public class KnowledgeGraphView extends Display{
 		at.addColumn(VisualItem.POLYGON, float[].class);
 		at.addColumn("id", int.class);
 
-		// add nodes to aggregates
-		// create an aggregate for each 3-clique of nodes
-		Iterator nodes = vg.nodes();
-		for ( int i=0; i<3; ++i ) {
-			AggregateItem aitem = (AggregateItem)at.addItem();
-			aitem.setInt("id", i);
-			for ( int j=0; j<3; ++j ) {
-				aitem.addItem((VisualItem)nodes.next());
-			}
-		}
+//		// add nodes to aggregates
+//		// create an aggregate for each 3-clique of nodes
+//		Iterator nodes = vg.nodes();
+//		for ( int i=0; i<3; ++i ) {
+//			AggregateItem aitem = (AggregateItem)at.addItem();
+//			aitem.setInt("id", i);
+//			for ( int j=0; j<3; ++j ) {
+//				aitem.addItem((VisualItem)nodes.next());
+//			}
+//		}
 	}
 
 
