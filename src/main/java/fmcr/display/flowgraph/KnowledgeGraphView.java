@@ -1,6 +1,7 @@
 package fmcr.display.flowgraph;
 
 import java.awt.Cursor;
+import java.awt.Shape;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -11,13 +12,17 @@ import javax.swing.SwingUtilities;
 
 import fmcr.leaks.detectors.Leak;
 import fmcr.main.Client;
+import fmcr.trash.RadialGraphView.NodeColorAction;
+import fmcr.trash.RadialGraphView.TextColorAction;
 import prefuse.Constants;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.action.ActionList;
+import prefuse.action.ItemAction;
 import prefuse.action.RepaintAction;
 import prefuse.action.assignment.ColorAction;
 import prefuse.action.assignment.DataColorAction;
+import prefuse.action.assignment.FontAction;
 import prefuse.action.layout.Layout;
 import prefuse.action.layout.graph.ForceDirectedLayout;
 import prefuse.activity.Activity;
@@ -25,19 +30,28 @@ import prefuse.controls.ControlAdapter;
 import prefuse.controls.PanControl;
 import prefuse.controls.ZoomControl;
 import prefuse.data.Node;
+import prefuse.data.Schema;
+import prefuse.data.expression.Predicate;
+import prefuse.data.expression.parser.ExpressionParser;
 import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.DefaultRendererFactory;
+import prefuse.render.EdgeRenderer;
 import prefuse.render.LabelRenderer;
 import prefuse.render.PolygonRenderer;
 import prefuse.render.Renderer;
 import prefuse.render.ShapeRenderer;
 import prefuse.util.ColorLib;
+import prefuse.util.FontLib;
 import prefuse.util.GraphicsLib;
+import prefuse.util.PrefuseLib;
 import prefuse.util.collections.IntIterator;
 import prefuse.visual.AggregateItem;
 import prefuse.visual.AggregateTable;
+import prefuse.visual.DecoratorItem;
+import prefuse.visual.EdgeItem;
 import prefuse.visual.VisualGraph;
 import prefuse.visual.VisualItem;
+import prefuse.visual.expression.InGroupPredicate;
 
 
 public class KnowledgeGraphView extends Display{
@@ -47,6 +61,10 @@ public class KnowledgeGraphView extends Display{
 	public static final String NODES = "graph.nodes";
 	public static final String EDGES = "graph.edges";
 	public static final String AGGR = "aggregates";
+    
+	private LabelRenderer m_nodeRenderer;
+	private EdgeRenderer m_edgeRenderer;
+    private String m_label = "label";
 
 	public KnowledgeGraphView() {		
 
@@ -61,15 +79,20 @@ public class KnowledgeGraphView extends Display{
 		Renderer polyR = new PolygonRenderer(Constants.POLY_TYPE_CURVE);
 		((PolygonRenderer)polyR).setCurveSlack(0.15f);
 
-//		LabelRenderer r = new LabelRenderer(KnowledgeGraph.LABEL);		
-//	    r.setRenderType(AbstractShapeRenderer.RENDER_TYPE_FILL);
-//	    r.setHorizontalAlignment(Constants.LEFT);
-//	    r.setRoundedCorner(8, 8);
-	        
+ 
+		// -- set up renderers --
+		m_nodeRenderer = new LabelRenderer(m_label);
+        m_nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
+        m_nodeRenderer.setHorizontalAlignment(Constants.CENTER);
+        m_nodeRenderer.setRoundedCorner(8,8);
+        m_edgeRenderer = new EdgeRenderer();
+        
 		DefaultRendererFactory drf = new DefaultRendererFactory();
 		drf.setDefaultRenderer(nodeR);
+        drf.add(new InGroupPredicate(EDGES), m_edgeRenderer);
+        drf.add(new InGroupPredicate(NODES), m_nodeRenderer);
+
 		drf.add("ingroup('aggregates')", polyR);
-//		drf.add("ingroup('graph.edges')", r);
 		m_vis.setRendererFactory(drf);
 
 		// set up the visual operators
@@ -89,15 +112,18 @@ public class KnowledgeGraphView extends Display{
 		aStroke.setDefaultColor(ColorLib.gray(200));
 		aStroke.add("_hover", ColorLib.rgb(255,100,100));
 
+        ColorAction arrow = new ColorAction(EDGES, VisualItem.FILLCOLOR, ColorLib.gray(100));
+
+		ColorAction text = new ColorAction(NODES,VisualItem.TEXTCOLOR, ColorLib.gray(0));
+		
 		int[] palette = new int[] {
 				ColorLib.rgba(255,200,200,150),
 				ColorLib.rgba(200,255,200,150),
 				ColorLib.rgba(200,200,255,150)
 		};
 		ColorAction aFill = new DataColorAction(AGGR, "id",Constants.NOMINAL, VisualItem.FILLCOLOR, palette);
-
-		ColorAction text = new ColorAction(EDGES, VisualItem.TEXTCOLOR, ColorLib.gray(0));
-		 
+		
+        
 		// bundle the color actions
 		ActionList colors = new ActionList();
 		colors.add(nStroke);
@@ -106,6 +132,8 @@ public class KnowledgeGraphView extends Display{
 		colors.add(aStroke);
 		colors.add(aFill);
 		colors.add(text);
+		colors.add(arrow);
+		
 
 		// now create the main layout routine
 		ActionList layout = new ActionList(Activity.INFINITY);
@@ -164,25 +192,26 @@ public class KnowledgeGraphView extends Display{
 			}			 
 		 }
 		
-		
 		m_vis.run("repaint");
 		
 		m_vis.run("color");
 		m_vis.run("layout");
 	}
-
+	
 	VisualGraph vg;
 	AggregateTable at;
 	private void initDataGroups() {
 
 		// add visual data groups
 		vg = m_vis.addGraph(GRAPH, KnowledgeGraph.getInstance());
+
 //		m_vis.setInteractive(EDGES, null, false);
 //		m_vis.setValue(NODES, null, VisualItem.SHAPE, new Integer(Constants.SHAPE_ELLIPSE));
 
 		at = m_vis.addAggregates(AGGR);
 		at.addColumn(VisualItem.POLYGON, float[].class);
 		at.addColumn("id", int.class);
+		
 
 //		// add nodes to aggregates
 //		// create an aggregate for each 3-clique of nodes
@@ -389,6 +418,4 @@ class AggregateDragControl extends ControlAdapter {
 	}
 
 } // end of class AggregateDragControl
-
-
 

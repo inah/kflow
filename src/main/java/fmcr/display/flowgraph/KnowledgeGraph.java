@@ -22,6 +22,10 @@ import prefuse.data.Edge;
 import prefuse.data.Graph;
 import prefuse.data.Node;
 import prefuse.data.Schema;
+import prefuse.util.ColorLib;
+import prefuse.util.FontLib;
+import prefuse.util.PrefuseLib;
+import prefuse.visual.VisualItem;
 
 public class KnowledgeGraph {
 	private static Graph g;
@@ -31,7 +35,7 @@ public class KnowledgeGraph {
 
 	public static Graph getInstance() {
 		if(g == null) {
-			g = new Graph();
+			g = new Graph(true);
 			g.getNodeTable().addColumns(NODE_SCHEMA);	
 			g.getEdgeTable().addColumns(EDGE_SCHEMA);
 		}
@@ -111,12 +115,17 @@ public class KnowledgeGraph {
 	
 
 	private static void addCallEdge(String node1Name, String node2Name, Leak leak) {
-		Node node1 = includeNode(node1Name, leak);
-		Node node2 = includeNode(node2Name, leak);
+		if(node1Name != null && node1Name.length() >0){
+			if(node2Name != null && node2Name.length() >0){
+				Node node1 = includeNode(node1Name, leak);
+				Node node2 = includeNode(node2Name, leak);
+				
+				addEdge(node1, node2);
+				rnodes.add(node1);
+				rnodes.add(node2);
+			}
+		}
 		
-		addEdge(node1, node2);
-		rnodes.add(node1);
-		rnodes.add(node2);
 	}
 	
 	private static ArrayList<Node> rnodes;
@@ -293,5 +302,5 @@ public class KnowledgeGraph {
 	static {
 		EDGE_SCHEMA.addColumn(LABEL, String.class, "");
 		EDGE_SCHEMA.addColumn(EDGESIZE, Double.class, new Double(1));
-	}
+	}	
 }
