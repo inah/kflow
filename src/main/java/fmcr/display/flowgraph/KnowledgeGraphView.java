@@ -25,7 +25,9 @@ import prefuse.controls.ControlAdapter;
 import prefuse.controls.PanControl;
 import prefuse.controls.ZoomControl;
 import prefuse.data.Node;
+import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.DefaultRendererFactory;
+import prefuse.render.LabelRenderer;
 import prefuse.render.PolygonRenderer;
 import prefuse.render.Renderer;
 import prefuse.render.ShapeRenderer;
@@ -59,9 +61,15 @@ public class KnowledgeGraphView extends Display{
 		Renderer polyR = new PolygonRenderer(Constants.POLY_TYPE_CURVE);
 		((PolygonRenderer)polyR).setCurveSlack(0.15f);
 
+//		LabelRenderer r = new LabelRenderer(KnowledgeGraph.LABEL);		
+//	    r.setRenderType(AbstractShapeRenderer.RENDER_TYPE_FILL);
+//	    r.setHorizontalAlignment(Constants.LEFT);
+//	    r.setRoundedCorner(8, 8);
+	        
 		DefaultRendererFactory drf = new DefaultRendererFactory();
 		drf.setDefaultRenderer(nodeR);
 		drf.add("ingroup('aggregates')", polyR);
+//		drf.add("ingroup('graph.edges')", r);
 		m_vis.setRendererFactory(drf);
 
 		// set up the visual operators
@@ -86,9 +94,10 @@ public class KnowledgeGraphView extends Display{
 				ColorLib.rgba(200,255,200,150),
 				ColorLib.rgba(200,200,255,150)
 		};
-		ColorAction aFill = new DataColorAction(AGGR, "id",
-				Constants.NOMINAL, VisualItem.FILLCOLOR, palette);
+		ColorAction aFill = new DataColorAction(AGGR, "id",Constants.NOMINAL, VisualItem.FILLCOLOR, palette);
 
+		ColorAction text = new ColorAction(EDGES, VisualItem.TEXTCOLOR, ColorLib.gray(0));
+		 
 		// bundle the color actions
 		ActionList colors = new ActionList();
 		colors.add(nStroke);
@@ -96,6 +105,7 @@ public class KnowledgeGraphView extends Display{
 		colors.add(nEdges);
 		colors.add(aStroke);
 		colors.add(aFill);
+		colors.add(text);
 
 		// now create the main layout routine
 		ActionList layout = new ActionList(Activity.INFINITY);
@@ -106,7 +116,7 @@ public class KnowledgeGraphView extends Display{
 		m_vis.putAction("layout", layout);
 
 		// set up the display
-		setSize(500,500);
+		setSize(400,370);
 		pan(250, 250);
 		setHighQuality(true);
 		addControlListener(new AggregateDragControl());
@@ -126,6 +136,9 @@ public class KnowledgeGraphView extends Display{
 	AggregateItem aitem;
 	private static int cgid = -1;
 	public void addLeaks(Leak leak) {
+		m_vis.setInteractive(EDGES, null, false);
+		m_vis.setValue(NODES, null, VisualItem.SHAPE, new Integer(Constants.SHAPE_ELLIPSE));
+
 		ArrayList<Node> resultantNodes = KnowledgeGraph.addCallEdge(leak);
 		
 		if(leak.getGroupId() != cgid) {
@@ -140,8 +153,13 @@ public class KnowledgeGraphView extends Display{
 			 for(Node node:resultantNodes){
 				 String vitem_l = (String)vitem.get(KnowledgeGraph.LABEL);
 				 String node_l = (String)node.get(KnowledgeGraph.LABEL);
-				 if(vitem_l.equals(node_l)){
-		             aitem.addItem(vitem);
+				 if(vitem_l !=null && node_l !=null){
+					 if(vitem_l.equals(node_l)){
+			             aitem.addItem(vitem);
+					 } 
+				 }
+				 else{
+					 aitem.addItem(vitem);
 				 }
 			}			 
 		 }
@@ -159,8 +177,8 @@ public class KnowledgeGraphView extends Display{
 
 		// add visual data groups
 		vg = m_vis.addGraph(GRAPH, KnowledgeGraph.getInstance());
-		m_vis.setInteractive(EDGES, null, false);
-		m_vis.setValue(NODES, null, VisualItem.SHAPE, new Integer(Constants.SHAPE_ELLIPSE));
+//		m_vis.setInteractive(EDGES, null, false);
+//		m_vis.setValue(NODES, null, VisualItem.SHAPE, new Integer(Constants.SHAPE_ELLIPSE));
 
 		at = m_vis.addAggregates(AGGR);
 		at.addColumn(VisualItem.POLYGON, float[].class);

@@ -25,10 +25,12 @@ import prefuse.controls.ZoomControl;
 import prefuse.data.Graph;
 import prefuse.data.Node;
 import prefuse.render.DefaultRendererFactory;
+import prefuse.render.LabelRenderer;
 import prefuse.render.PolygonRenderer;
 import prefuse.render.Renderer;
 import prefuse.render.ShapeRenderer;
 import prefuse.util.ColorLib;
+import prefuse.util.GraphLib;
 import prefuse.util.GraphicsLib;
 import prefuse.visual.AggregateItem;
 import prefuse.visual.AggregateTable;
@@ -56,6 +58,7 @@ public class AggregateDemo extends Display {
     public AggregateDemo() {
         // initialize display and data
         super(new Visualization());
+
         initDataGroups();
         
         // set up the renderers
@@ -64,11 +67,13 @@ public class AggregateDemo extends Display {
         // draw aggregates as polygons with curved edges
         Renderer polyR = new PolygonRenderer(Constants.POLY_TYPE_CURVE);
         ((PolygonRenderer)polyR).setCurveSlack(0.15f);
-        
+         
         DefaultRendererFactory drf = new DefaultRendererFactory();
         drf.setDefaultRenderer(nodeR);
         drf.add("ingroup('aggregates')", polyR);
+        
         m_vis.setRendererFactory(drf);
+        
         
         // set up the visual operators
         // first set up all the color actions
@@ -95,6 +100,15 @@ public class AggregateDemo extends Display {
         ColorAction aFill = new DataColorAction(AGGR, "id",
                 Constants.NOMINAL, VisualItem.FILLCOLOR, palette);
         
+//        ColorAction fill = new ColorAction("graph.nodes",
+//        VisualItem.FILLCOLOR, ColorLib.rgb(200, 200, 255));
+        // use black for node text
+        ColorAction text = new ColorAction("graph.nodes",
+        VisualItem.TEXTCOLOR, ColorLib.gray(0));
+//        // use light grey for edges
+//        ColorAction edges = new ColorAction("graph.edges",
+//        VisualItem.STROKECOLOR, ColorLib.gray(200));
+            
         // bundle the color actions
         ActionList colors = new ActionList();
         colors.add(nStroke);
@@ -102,6 +116,10 @@ public class AggregateDemo extends Display {
         colors.add(nEdges);
         colors.add(aStroke);
         colors.add(aFill);
+        
+//        colors.add(fill);
+        colors.add(text);
+//        colors.add(edges);
         
         // now create the main layout routine
         ActionList layout = new ActionList(Activity.INFINITY);
@@ -112,7 +130,7 @@ public class AggregateDemo extends Display {
         m_vis.putAction("layout", layout);
         
         // set up the display
-        setSize(500,500);
+        setSize(00,500);
         pan(250, 250);
         setHighQuality(true);
         addControlListener(new AggregateDragControl());

@@ -1116,6 +1116,7 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 			Client.getDisplay().updateLogPage("mUnsolvable: "+n.toString(), true);
 		}catch(RuntimeException e) {
 			Client.getDisplay().updateLogPage("mrUnsolvable: "+e.getMessage(), true);
+			e.printStackTrace();
 		}
 
 		super.visit(n, id);
@@ -1325,6 +1326,7 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 			Client.getDisplay().updateLogPage("mUnsolvable: "+n.toString(), true);
 		}catch(RuntimeException e) {
 			Client.getDisplay().updateLogPage("mrUnsolvable: "+e.getMessage(), true);
+			e.printStackTrace();
 		}
 		
 		super.visit(n, id);

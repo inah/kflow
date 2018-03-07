@@ -22,20 +22,6 @@ public class LeaksFactory {
 		Client.getDisplay().jTabbedPane1.setSelectedIndex(1);
 
 		for(Leak leak:CodeVisitor.leaks) {
-			Client.totalLeaks = Client.totalLeaks +1;
-			if(leak.getSensitivityLevel() == SensitivityLevel.L1) {
-				Client.l1Leaks = Client.l1Leaks +1;
-			}
-			else if(leak.getSensitivityLevel() == SensitivityLevel.L2) {
-				Client.l2Leaks = Client.l2Leaks +1;
-			}
-			else if(leak.getSensitivityLevel() == SensitivityLevel.L3) {
-				Client.l3Leaks = Client.l3Leaks +1;
-			}
-			else if(leak.getSensitivityLevel() == SensitivityLevel.L4) {
-				Client.l4Leaks = Client.l4Leaks +1;
-			}
-			
 			String fileName = "";
 			if(Client.getSelectedSourceFile() !=null) {
 				fileName = Client.getSelectedSourceFile().getName();
@@ -45,6 +31,20 @@ public class LeaksFactory {
 			if(leak instanceof MethodLeak) {
 				ArrayList<String> descs = ((MethodLeak) leak).multiDescribe();
 				for(String s:descs) {
+					Client.totalLeaks = Client.totalLeaks +1;
+					if(leak.getSensitivityLevel() == SensitivityLevel.L1) {
+						Client.l1Leaks = Client.l1Leaks +1;
+					}
+					else if(leak.getSensitivityLevel() == SensitivityLevel.L2) {
+						Client.l2Leaks = Client.l2Leaks +1;
+					}
+					else if(leak.getSensitivityLevel() == SensitivityLevel.L3) {
+						Client.l3Leaks = Client.l3Leaks +1;
+					}
+					else if(leak.getSensitivityLevel() == SensitivityLevel.L4) {
+						Client.l4Leaks = Client.l4Leaks +1;
+					}
+					
 					ckv.model.addRow(new Object[]{Client.totalLeaks, s,
 							 leak.getClass().getSimpleName(),leak.getLeakLine(), 
 							 leak.tag, leak.getSensitivityLevel(), leak.getCodeSource(), fileName});
@@ -59,6 +59,20 @@ public class LeaksFactory {
 					
 			}
 			else {
+				Client.totalLeaks = Client.totalLeaks +1;
+				if(leak.getSensitivityLevel() == SensitivityLevel.L1) {
+					Client.l1Leaks = Client.l1Leaks +1;
+				}
+				else if(leak.getSensitivityLevel() == SensitivityLevel.L2) {
+					Client.l2Leaks = Client.l2Leaks +1;
+				}
+				else if(leak.getSensitivityLevel() == SensitivityLevel.L3) {
+					Client.l3Leaks = Client.l3Leaks +1;
+				}
+				else if(leak.getSensitivityLevel() == SensitivityLevel.L4) {
+					Client.l4Leaks = Client.l4Leaks +1;
+				}				
+				
 				if(leak instanceof CascadeObjectCreationLeak) {
 					String desc = leak.describe();
 					desc = "<html>"+desc+"</html>";

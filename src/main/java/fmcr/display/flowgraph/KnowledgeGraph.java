@@ -60,8 +60,7 @@ public class KnowledgeGraph {
 		while(iter.hasNext()) {
 			Node node_ = (Node)iter.next();
 			String nlabel = (String)node_.get(LABEL);
-
-			if(nlabel.equals(label)) {
+			if(nlabel != null && nlabel.equals(label)) {
 				@SuppressWarnings("unchecked")
 				ArrayList<Leak> leaks = (ArrayList<Leak>)node_.get(LEAKS);
 				leaks.add(leak);
