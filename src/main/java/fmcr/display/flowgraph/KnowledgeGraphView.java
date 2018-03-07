@@ -10,6 +10,7 @@ import java.util.Iterator;
 import javax.swing.SwingUtilities;
 
 import fmcr.leaks.detectors.Leak;
+import fmcr.main.Client;
 import prefuse.Constants;
 import prefuse.Display;
 import prefuse.Visualization;
@@ -122,28 +123,24 @@ public class KnowledgeGraphView extends Display{
 
 	}
 	
+	AggregateItem aitem;
+	private static int cgid = -1;
 	public void addLeaks(Leak leak) {
 		ArrayList<Node> resultantNodes = KnowledgeGraph.addCallEdge(leak);
 		
-		AggregateItem aitem = null;
-		IntIterator iter = at.rows();
-		while(iter.hasNext()){
-			AggregateItem aitem_ = (AggregateItem)iter.next();
-			int cid = (Integer)aitem_.get("id");
-			if(cid == leak.getGroupId()){
-				aitem =aitem_;
-				break;
-			}
-		}
-		if(aitem == null){
+		if(leak.getGroupId() != cgid) {
 			aitem = (AggregateItem)at.addItem();
 			aitem.setInt("id", leak.getGroupId());
+			cgid = leak.getGroupId();
 		}
+		
 		 Iterator nodes = vg.nodes();
 		 while(nodes.hasNext()){
 			 VisualItem vitem = (VisualItem)nodes.next();
 			 for(Node node:resultantNodes){
-				 if(vitem.get(KnowledgeGraph.LABEL).equals(node.get(KnowledgeGraph.LABEL))){
+				 String vitem_l = (String)vitem.get(KnowledgeGraph.LABEL);
+				 String node_l = (String)node.get(KnowledgeGraph.LABEL);
+				 if(vitem_l.equals(node_l)){
 		             aitem.addItem(vitem);
 				 }
 			}			 
@@ -210,8 +207,7 @@ class AggregateLayout extends Layout {
 		// update buffers
 		int maxsz = 0;
 		for ( Iterator aggrs = aggr.tuples(); aggrs.hasNext();  )
-			maxsz = Math.max(maxsz, 4*2*
-					((AggregateItem)aggrs.next()).getAggregateSize());
+			maxsz = Math.max(maxsz, 4*2*((AggregateItem)aggrs.next()).getAggregateSize());
 		if ( m_pts == null || maxsz > m_pts.length ) {
 			m_pts = new double[maxsz];
 		}

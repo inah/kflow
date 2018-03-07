@@ -96,7 +96,7 @@ public class KnowledgeGraph {
 			if(elabel.equals(stlabel)) {
 				double esize = (Double)edge_.get(EDGESIZE);
 				esize = esize +0.1;
-				edge_.set(NODESIZE, esize);
+				edge_.set(EDGESIZE, esize);
 				edge = edge_;
 				
 				break;
@@ -286,13 +286,13 @@ public class KnowledgeGraph {
 	public static final Schema NODE_SCHEMA = new Schema();
 	static {
 		NODE_SCHEMA.addColumn(LABEL, String.class, "");
-		NODE_SCHEMA.addColumn(NODESIZE, Double.class, 5);
+		NODE_SCHEMA.addColumn(NODESIZE, Double.class, new Double(5));
 		NODE_SCHEMA.addColumn(LEAKS, ArrayList.class, new ArrayList<Leak>());
 
 	}
 	public static final Schema EDGE_SCHEMA = new Schema();
 	static {
 		EDGE_SCHEMA.addColumn(LABEL, String.class, "");
-		EDGE_SCHEMA.addColumn(EDGESIZE, Double.class, 1);
+		EDGE_SCHEMA.addColumn(EDGESIZE, Double.class, new Double(1));
 	}
 }

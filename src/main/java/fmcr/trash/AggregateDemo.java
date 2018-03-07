@@ -204,8 +204,7 @@ class AggregateLayout extends Layout {
         // update buffers
         int maxsz = 0;
         for ( Iterator aggrs = aggr.tuples(); aggrs.hasNext();  )
-            maxsz = Math.max(maxsz, 4*2*
-                    ((AggregateItem)aggrs.next()).getAggregateSize());
+            maxsz = Math.max(maxsz, 4*2*((AggregateItem)aggrs.next()).getAggregateSize());
         if ( m_pts == null || maxsz > m_pts.length ) {
             m_pts = new double[maxsz];
         }
