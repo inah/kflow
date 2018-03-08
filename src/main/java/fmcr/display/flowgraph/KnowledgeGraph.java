@@ -120,7 +120,7 @@ public class KnowledgeGraph {
 				Node node1 = includeNode(node1Name, leak);
 				Node node2 = includeNode(node2Name, leak);
 				
-				addEdge(node1, node2);
+				focusEdge = addEdge(node1, node2);
 				rnodes.add(node1);
 				rnodes.add(node2);
 			}
@@ -129,9 +129,10 @@ public class KnowledgeGraph {
 	}
 	
 	private static ArrayList<Node> rnodes;
+	public static Edge focusEdge;
 	public static ArrayList<Node> addCallEdge(Leak r) {
 		rnodes = new ArrayList<Node>();
-		
+		focusEdge = null;
 		if(r instanceof CascadeObjectCreationLeak) {
 			r  = (CascadeObjectCreationLeak)r;
 
