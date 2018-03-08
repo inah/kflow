@@ -1,6 +1,7 @@
 package fmcr.main;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -31,7 +32,8 @@ public class Client {
     public static int l3Leaks;
     public static int l4Leaks;
     
-			
+	public static ArrayList<File> sourceFiles;
+	public static boolean isDir;
 	
 	public static boolean isSourceFileLoaded() {
 		return sourceFileLoaded;

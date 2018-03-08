@@ -107,6 +107,7 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSol
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
+import com.github.javaparser.utils.ClassUtils;
 
 import fmcr.display.TypeInputSourcesDialog;
 import fmcr.leaks.detectors.CascadeObjectCreation;
@@ -993,51 +994,65 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 			String method_name = JavaParserFacade.get(ts).solve(n).getCorrespondingDeclaration().getName();
 //			String method_handler = JavaParserFacade.get(ts).solve(n).getCorrespondingDeclaration().getQualifiedName();
 
-			/*
-			 * Object method calls leaks
-			 * Example:
-			 * double salary = p.computeSalary(xxx);
-			 */
 			String leakline = n.getRange().get().toString();
-			MethodCallLeak mcl = new MethodCallLeak(id,reference_t,method_name, return_t, leakline);
-			mcl.setCodeSource(sourceCode);
-			leaks.add(mcl);
-			updateKnowledgeGraph(mcl);
-			ClassMethodCallLeak cmcl = new ClassMethodCallLeak(id,CodeVisitor.className,reference_t,method_name, return_t, leakline);
-			cmcl.setCodeSource(sourceCode);
-			leaks.add(cmcl);
-			updateKnowledgeGraph(cmcl);
-
-			/*
-			 * Method parameters containing Object method calls leaks
-			 * Example:
-			 * PayInfo p = new PayInfo(new Double(1.99));
-			 * WorkInfo w = new WorkInfo(new  Double(5));
-			 * double salary = p.computeSalary(w.getHrsworked());
-			 */
-			String parentLabel = Client.getDisplay().astview.getVertexLabel(arg);
-			if(parentLabel.equals("MethodCallExpr")) {
-				String mhandle = "";
-				for(Leak mch_:leaks) {
-					if(mch_.getNodeId().equals(arg)) {
-						if(mch_ instanceof MethodCallLeak) {
-							MethodCallLeak mcl_t = (MethodCallLeak)mch_;
-							mhandle = mcl_t.getHandlerType();
-							break;
-						}
-						
-					}
-				}
-				MethodArgAsObjectMethodCallLeak mcpl = new MethodArgAsObjectMethodCallLeak(id,reference_t,method_name, return_t, leakline,mhandle);
-				mcpl.setCodeSource(sourceCode);
-				leaks.add(mcpl);
-				updateKnowledgeGraph(mcpl);
-				ClassMethodArgAsObjectMethodCallLeak cmcpl = new ClassMethodArgAsObjectMethodCallLeak(id,CodeVisitor.className,reference_t,method_name, return_t, leakline,mhandle);
-				cmcpl.setCodeSource(sourceCode);
-				leaks.add(cmcpl);
-				updateKnowledgeGraph(cmcpl);
+			Type type = JavaParserFacade.get(ts).solve(n).getCorrespondingDeclaration().getReturnType();
+			String reference_tx = type.describe();
+			if(!(type.isPrimitive()||
+				 reference_tx.startsWith("java.") ||
+			     reference_tx.startsWith("javax.") ||
+			     reference_tx.startsWith("org.omg.") ||
+  			     reference_tx.startsWith("org.w3c.dom.") ||
+			     reference_tx.startsWith("org.xml.sax."))) {
 				
+
+				/*
+				 * Object method calls leaks
+				 * Example:
+				 * double salary = p.computeSalary(xxx);
+				 */
+				MethodCallLeak mcl = new MethodCallLeak(id,reference_t,method_name, return_t, leakline);
+				mcl.setCodeSource(sourceCode);
+				leaks.add(mcl);
+				updateKnowledgeGraph(mcl);
+				ClassMethodCallLeak cmcl = new ClassMethodCallLeak(id,CodeVisitor.className,reference_t,method_name, return_t, leakline);
+				cmcl.setCodeSource(sourceCode);
+				leaks.add(cmcl);
+				updateKnowledgeGraph(cmcl);
+				
+				/*
+				 * Method parameters containing Object method calls leaks
+				 * Example:
+				 * PayInfo p = new PayInfo(new Double(1.99));
+				 * WorkInfo w = new WorkInfo(new  Double(5));
+				 * double salary = p.computeSalary(w.getHrsworked());
+				 */
+				String parentLabel = Client.getDisplay().astview.getVertexLabel(arg);
+				if(parentLabel.equals("MethodCallExpr")) {
+					String mhandle = "";
+					for(Leak mch_:leaks) {
+						if(mch_.getNodeId().equals(arg)) {
+							if(mch_ instanceof MethodCallLeak) {
+								MethodCallLeak mcl_t = (MethodCallLeak)mch_;
+								mhandle = mcl_t.getHandlerType();
+								break;
+							}
+							
+						}
+					}
+					MethodArgAsObjectMethodCallLeak mcpl = new MethodArgAsObjectMethodCallLeak(id,reference_t,method_name, return_t, leakline,mhandle);
+					mcpl.setCodeSource(sourceCode);
+					leaks.add(mcpl);
+					updateKnowledgeGraph(mcpl);
+					ClassMethodArgAsObjectMethodCallLeak cmcpl = new ClassMethodArgAsObjectMethodCallLeak(id,CodeVisitor.className,reference_t,method_name, return_t, leakline,mhandle);
+					cmcpl.setCodeSource(sourceCode);
+					leaks.add(cmcpl);
+					updateKnowledgeGraph(cmcpl);
+					
+				}
 			}
+			
+
+			
 			
 			/*
 			 * Method parameters containing Object leaks
@@ -1070,6 +1085,7 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 					cmaaol.setCodeSource(sourceCode);
 					leaks.add(cmaaol);	
 					updateKnowledgeGraph(cmaaol);
+					
 				}
 						
 			}

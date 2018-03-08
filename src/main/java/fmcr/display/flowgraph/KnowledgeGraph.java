@@ -42,6 +42,13 @@ public class KnowledgeGraph {
 		        
 		return g;
 	}
+	
+	public static Graph produceNewInstance(){
+		g = new Graph(true);
+		g.getNodeTable().addColumns(NODE_SCHEMA);	
+		g.getEdgeTable().addColumns(EDGE_SCHEMA);
+		return g;
+	}
 
 	private static Node addNode(String label, Leak leak) {
 		Node node = g.addNode();
@@ -70,8 +77,8 @@ public class KnowledgeGraph {
 				leaks.add(leak);
 				node_.set(LEAKS, leaks);
 
-				double nsize = (Double)node_.get(NODESIZE);
-				nsize = nsize +0.1;
+				int nsize = (Integer)node_.get(NODESIZE);
+				nsize = nsize +1;
 				node_.set(NODESIZE, nsize);
 				node = node_;
 				
@@ -97,8 +104,8 @@ public class KnowledgeGraph {
 			Edge edge_ = (Edge)iter.next();
 			String elabel = (String)edge_.get(LABEL);
 			if(elabel.equals(stlabel)) {
-				double esize = (Double)edge_.get(EDGESIZE);
-				esize = esize +0.1;
+				int esize = (Integer)edge_.get(EDGESIZE);
+				esize = esize +1;
 				edge_.set(EDGESIZE, esize);
 				edge = edge_;
 				
@@ -115,8 +122,14 @@ public class KnowledgeGraph {
 	
 
 	private static void addCallEdge(String node1Name, String node2Name, Leak leak) {
+		
+		
 		if(node1Name != null && node1Name.length() >0){
 			if(node2Name != null && node2Name.length() >0){
+				if(node1Name.contains("double") ||node2Name.contains("double")){
+					System.out.println("double");
+				}
+				
 				Node node1 = includeNode(node1Name, leak);
 				Node node2 = includeNode(node2Name, leak);
 				
@@ -295,13 +308,13 @@ public class KnowledgeGraph {
 	public static final Schema NODE_SCHEMA = new Schema();
 	static {
 		NODE_SCHEMA.addColumn(LABEL, String.class, "");
-		NODE_SCHEMA.addColumn(NODESIZE, Double.class, new Double(5));
+		NODE_SCHEMA.addColumn(NODESIZE, Integer.class, new Integer(0));
 		NODE_SCHEMA.addColumn(LEAKS, ArrayList.class, new ArrayList<Leak>());
 
 	}
 	public static final Schema EDGE_SCHEMA = new Schema();
 	static {
 		EDGE_SCHEMA.addColumn(LABEL, String.class, "");
-		EDGE_SCHEMA.addColumn(EDGESIZE, Double.class, new Double(1));
+		EDGE_SCHEMA.addColumn(EDGESIZE, Integer.class, new Integer(1));
 	}	
 }

@@ -11,9 +11,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
@@ -48,6 +50,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 
 import com.mxgraph.view.mxGraphView;
 
+import fmcr.display.flowgraph.KnowledgeGraph;
 import fmcr.display.flowgraph.KnowledgeGraphView;
 import fmcr.main.Client;
 import fmcr.main.ResourceLoader;
@@ -176,6 +179,9 @@ public class Display extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				clearSourceStatements();	
 				astview.setVisible(false);
+				leaksView.model.setRowCount(0);
+				clearKnowledgeGraph();
+				clearLogPane(logTextPane);
 			}
 
 		});
@@ -362,7 +368,24 @@ public class Display extends JFrame {
 		textArea.append(statement+"\n");
 	}
 
+	int nofiles;
+	private void crawlFiles(File[] files) {
+		nofiles = nofiles +files.length;
 
+		for (File file : files) {
+			if (file.isDirectory()) {
+				crawlFiles(file.listFiles());
+			} else {
+				String[] s = file.toString().split(Pattern.quote("."));
+				if(s.length >1) {
+					if (s[1].equals("java")) {
+						Client.sourceFiles.add(file);
+					}
+				}				
+			}
+		}
+	}
+	
 	/**
 	 * Reads a local folder to select .java files for program analysis 
 	 * user can select from <code>1</code> to <code>n</code>.java files
@@ -370,8 +393,8 @@ public class Display extends JFrame {
 	public void readLocalRepository() {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setCurrentDirectory(new java.io.File("."));
-		chooser.setDialogTitle("Select Source File ");
-		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);//.FILES_AND_DIRECTORIES);
+		chooser.setDialogTitle("Select source file/directory to analyse");
+		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);//.FILES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
 		FileNameExtensionFilter filter = new FileNameExtensionFilter(".java", "java", "java");
 		chooser.setFileFilter(filter);
@@ -379,66 +402,118 @@ public class Display extends JFrame {
 		if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 			Thread queryThread2 = new Thread() {
 				public void run() {		
-					BufferedReader buff = null;
-
 					clearSourceStatements();
 					astview.setVisible(false);
+					
+					BufferedReader buff = null;
+					File selectedFile = chooser.getSelectedFile();
+					
+					if(selectedFile.isDirectory()) {
+						Client.isDir = true;
 
-					String[] s = chooser.getSelectedFile().toString().split(Pattern.quote("."));
-					if(!s[s.length-1].equals("java")) {
-						return;
+						Client.sourceFiles = new ArrayList<File>();						
+						File[] files = chooser.getSelectedFile().listFiles();
+						nofiles =0;
+						crawlFiles(files);
 					}
-					Client.setSelectedSourceFile(chooser.getSelectedFile());
-
-					try {	
-						buff = new BufferedReader(new FileReader(Client.getSelectedSourceFile()));
-						String str;
-						while ((str = buff.readLine()) != null) {
-							addSourceStatement(str);
-
+					else {
+						Client.isDir = false;
+						String[] s = chooser.getSelectedFile().toString().split(Pattern.quote("."));
+						if(!s[s.length-1].equals("java")) {
+							return;
 						}
-					}
-					catch (IOException e) {
-						System.err.print(e);
-					} 
+						Client.setSelectedSourceFile(chooser.getSelectedFile());
 
-					Client.setSourceFileLoaded(true);
+						try {	
+							buff = new BufferedReader(new FileReader(Client.getSelectedSourceFile()));
+							String str;
+							while ((str = buff.readLine()) != null) {
+								addSourceStatement(str);
+
+							}
+						}
+						catch (IOException e) {
+							System.err.print(e);
+						} 
+
+						Client.setSourceFileLoaded(true);
+					}
+
+					
 				}
 			};
 			queryThread2.start();				
 		}        
-	}   
+	}  
+	
+	/**
+	 * clears knowledge graph
+	 */
+	private void clearKnowledgeGraph(){
+		jScrollPane3.remove(kgview);
+		kgview = null;
+		createKnowledgeGraphView();		
+		jScrollPane3.setViewportView(kgview);	
+		jScrollPane3.revalidate();
+		jScrollPane3.repaint();
+		jSplitPane2.setRightComponent(jScrollPane3);
+		jSplitPane2.setDividerLocation(585);
+		jSplitPane2.revalidate();
+		jSplitPane2.repaint();
+		revalidate();
+		repaint();
+		
+		updateKnowledgeGraphView();
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * Executes program analysis
 	 * @param button press event (ActionEvent).
 	 */
 	private void analyseProgram() {
-
+		if(leaksView !=null) {
+			leaksView.model.setRowCount(0);
+			clearKnowledgeGraph();
+			clearLogPane(logTextPane);
+		}
+		
 		Thread queryThread2 = new Thread() {
 			public void run() {
-				if(leaksView !=null) {
-					leaksView.model.setRowCount(0);
-					clearLogPane(logTextPane);
-				}
-
-				if (textArea.getText() != null && textArea.getText().length()>0) {
-					boolean loaded = Client.loadCompilationUnit();
-					if(loaded) {
-						astview.setVisible(true);
-						astview.clearGraph();
-						Client.doCodeAnalysis();
+				if(Client.isDir){
+					
+					updateProgressComponent(0,"%");
+					
+					for(File file: Client.sourceFiles){
+						//xxx
 					}
-					else {
-						createASTView();
-						jScrollPane3 = new javax.swing.JScrollPane(astview);
-						jSplitPane2.setRightComponent(jScrollPane3);
-						jSplitPane2.setDividerLocation(585);
-
-						updateLogPage("No CompilationUnit", true);
-					}
-					updateLabels();
+					
+					updateProgressComponent(100,"");
 				}
+				else{
+					if (textArea.getText() != null && textArea.getText().length()>0) {
+						boolean loaded = Client.loadCompilationUnit();
+						if(loaded) {
+							astview.setVisible(true);
+							astview.clearGraph();
+							Client.doCodeAnalysis();
+						}
+						else {
+							createASTView();
+							jScrollPane3 = new javax.swing.JScrollPane(astview);
+							jSplitPane2.setRightComponent(jScrollPane3);
+							jSplitPane2.setDividerLocation(585);
+
+							updateLogPage("No CompilationUnit", true);
+						}
+						updateLabels();
+					}
+				}
+				
 			}
 		};
 		queryThread2.start();

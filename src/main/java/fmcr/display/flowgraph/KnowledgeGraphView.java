@@ -29,8 +29,10 @@ import prefuse.controls.PanControl;
 import prefuse.controls.ZoomControl;
 import prefuse.data.Node;
 import prefuse.data.Schema;
+import prefuse.data.Tuple;
 import prefuse.data.expression.Predicate;
 import prefuse.data.expression.parser.ExpressionParser;
+import prefuse.data.tuple.TupleSet;
 import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.DefaultRendererFactory;
 import prefuse.render.EdgeRenderer;
@@ -88,7 +90,7 @@ public class KnowledgeGraphView extends Display{
     static { 
     	DECORATOR_SCHEMA.setDefault(VisualItem.INTERACTIVE, false); 
     	DECORATOR_SCHEMA.setDefault(VisualItem.TEXTCOLOR, ColorLib.gray(128)); 
-    	DECORATOR_SCHEMA.setDefault(VisualItem.FONT, FontLib.getFont("Tahoma",16));
+    	DECORATOR_SCHEMA.setDefault(VisualItem.FONT, FontLib.getFont("Tahoma",8));
     }
     
 	private LabelRenderer m_nodeRenderer;
@@ -99,6 +101,7 @@ public class KnowledgeGraphView extends Display{
 
 		// initialize display and data
 		super(new Visualization());
+		cgid = -1;
 		initDataGroups();
 
 		// set up the renderers
@@ -196,6 +199,7 @@ public class KnowledgeGraphView extends Display{
 
 	}
 	
+	
 	AggregateItem aitem;
 	private static int cgid = -1;
 	public void addLeaks(Leak leak) {
@@ -207,8 +211,8 @@ public class KnowledgeGraphView extends Display{
 			String label = (String)node.get(KnowledgeGraph.LABEL);
 			node.setString(VisualItem.LABEL, label);
 		}
-		Double elabeld = (Double)KnowledgeGraph.focusEdge.get(KnowledgeGraph.EDGESIZE);
-		String elabel = elabeld.toString();
+		Integer elabeli = (Integer)KnowledgeGraph.focusEdge.get(KnowledgeGraph.EDGESIZE);
+		String elabel = elabeli.toString();
 		KnowledgeGraph.focusEdge.setString(VisualItem.LABEL, elabel);
 		
 		if(leak.getGroupId() != cgid) {
@@ -239,13 +243,13 @@ public class KnowledgeGraphView extends Display{
 		m_vis.run("color");
 		m_vis.run("layout");
 	}
-	
+		
 	VisualGraph vg;
 	AggregateTable at;
 	private void initDataGroups() {
 
 		// add visual data groups
-		vg = m_vis.addGraph(GRAPH, KnowledgeGraph.getInstance());
+		vg = m_vis.addGraph(GRAPH, KnowledgeGraph.produceNewInstance());
 		KnowledgeGraph.getInstance().addColumn(VisualItem.LABEL, String.class);
 
 //		m_vis.setInteractive(EDGES, null, false);

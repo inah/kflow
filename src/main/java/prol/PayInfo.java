@@ -14,5 +14,7 @@ public class PayInfo {
 	public double computeSalary(double hrsworked) {
 		return salary*hrsworked;
 	}
+	public PayInfo() {
+	}
 	
 }
