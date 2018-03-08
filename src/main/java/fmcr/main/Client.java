@@ -1,6 +1,8 @@
 package fmcr.main;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +17,6 @@ import com.github.javaparser.ast.visitor.VoidVisitor;
 import fmcr.display.Display;
 import fmcr.display.LeaksFactory;
 import fmcr.visitors.CodeVisitor;
-
 
 public class Client {
 
@@ -56,11 +57,35 @@ public class Client {
 	
 	public static boolean loadCompilationUnit() {
 		try {
-			String code = getDisplay().textArea.getText();
-			cu = JavaParser.parse(code );
-			if(cu == null) {
-				return false;
+			if(isDir) {
+				if(selectedSourceFile == null) {
+					return false;
+				}
+				else {
+					try {
+						cu = JavaParser.parse(new FileInputStream(selectedSourceFile));
+						return true;
+					} 
+					catch (IOException e) {
+						Client.getDisplay().updateLogPage("UNPARSABLE (IOE):"+selectedSourceFile, true);
+					}
+					catch(ParseProblemException e) {
+						Client.getDisplay().updateLogPage("UNPARSABLE (PPE):"+selectedSourceFile, true);
+					}
+//					finally {
+//						
+//					}
+					return false;
+				}
 			}
+			else {
+				String code = getDisplay().textArea.getText();
+				cu = JavaParser.parse(code );
+				if(cu == null) {
+					return false;
+				}
+			}
+			
 			return true;
 		}
 		catch(ParseProblemException e) {

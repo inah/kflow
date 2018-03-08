@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
@@ -63,6 +64,7 @@ public class Display extends JFrame {
 	private static final long serialVersionUID = 1L;
 	public double zoom =1;
 	public int filecounter = 1; //increment by 1 after every java file that is analysed
+	DecimalFormat df = new DecimalFormat("####0.0");
 
 	public Display() {
 		try {
@@ -485,11 +487,30 @@ public class Display extends JFrame {
 		Thread queryThread2 = new Thread() {
 			public void run() {
 				if(Client.isDir){
-					
-					updateProgressComponent(0,"%");
-					
+					int i=0;
+					updateProgressComponent(i,"%");
+
 					for(File file: Client.sourceFiles){
-						//xxx
+						Client.setSelectedSourceFile(file);
+						addSourceStatement(file.getAbsolutePath());
+						boolean loaded = Client.loadCompilationUnit();
+						if(loaded) {
+							astview.setVisible(true);
+							astview.clearGraph();
+							Client.doCodeAnalysis();
+						}
+						else {
+							createASTView();
+							astJScrollPane = new JScrollPane(astview,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+							astJScrollPane.setViewportView(astview);		
+							astPanel.add(astJScrollPane,BorderLayout.CENTER);
+
+							updateLogPage("No CompilationUnit", true);
+						}
+						updateLabels();
+						i = i+1;
+						double pc = (i/ Client.sourceFiles.size()) * 100;						
+						updateProgressComponent(new Double(pc).intValue(), df.format(pc) + "%");
 					}
 					
 					updateProgressComponent(100,"");
@@ -504,9 +525,9 @@ public class Display extends JFrame {
 						}
 						else {
 							createASTView();
-							jScrollPane3 = new javax.swing.JScrollPane(astview);
-							jSplitPane2.setRightComponent(jScrollPane3);
-							jSplitPane2.setDividerLocation(585);
+							astJScrollPane = new JScrollPane(astview,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+							astJScrollPane.setViewportView(astview);		
+							astPanel.add(astJScrollPane,BorderLayout.CENTER);
 
 							updateLogPage("No CompilationUnit", true);
 						}
