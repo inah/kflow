@@ -51,7 +51,6 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 
 import com.mxgraph.view.mxGraphView;
 
-import fmcr.display.flowgraph.KnowledgeGraph;
 import fmcr.display.flowgraph.KnowledgeGraphView;
 import fmcr.main.Client;
 import fmcr.main.ResourceLoader;
@@ -380,7 +379,7 @@ public class Display extends JFrame {
 			} else {
 				String[] s = file.toString().split(Pattern.quote("."));
 				if(s.length >1) {
-					if (s[1].equals("java")) {
+					if (s[s.length-1].equals("java")) {
 						Client.sourceFiles.add(file);
 					}
 				}				
@@ -417,6 +416,7 @@ public class Display extends JFrame {
 						File[] files = chooser.getSelectedFile().listFiles();
 						nofiles =0;
 						crawlFiles(files);
+						updateLogPage(nofiles+ " java files loaded", false);
 					}
 					else {
 						Client.isDir = false;
@@ -507,6 +507,8 @@ public class Display extends JFrame {
 
 							updateLogPage("No CompilationUnit", true);
 						}
+						filecounter = filecounter+1;
+						i =i+1;
 						updateLabels();
 						i = i+1;
 						double pc = (i/ Client.sourceFiles.size()) * 100;						
