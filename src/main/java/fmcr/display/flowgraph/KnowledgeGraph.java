@@ -22,10 +22,6 @@ import prefuse.data.Edge;
 import prefuse.data.Graph;
 import prefuse.data.Node;
 import prefuse.data.Schema;
-import prefuse.util.ColorLib;
-import prefuse.util.FontLib;
-import prefuse.util.PrefuseLib;
-import prefuse.visual.VisualItem;
 
 public class KnowledgeGraph {
 	private static Graph g;
@@ -126,9 +122,6 @@ public class KnowledgeGraph {
 		
 		if(node1Name != null && node1Name.length() >0){
 			if(node2Name != null && node2Name.length() >0){
-				if(node1Name.contains("double") ||node2Name.contains("double")){
-					System.out.println("double");
-				}
 				
 				Node node1 = includeNode(node1Name, leak);
 				Node node2 = includeNode(node2Name, leak);

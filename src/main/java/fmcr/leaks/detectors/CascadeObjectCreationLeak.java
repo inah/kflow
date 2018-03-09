@@ -58,7 +58,7 @@ public class CascadeObjectCreationLeak extends Leak{
 	}
 	
 	public String getContainedObjectType() {
-		if(containedObjectType == null || isPrimitiveLeak()) {
+		if(containedObjectType == null) {
 			return containedObjectName;
 		}
 		return containedObjectType;
