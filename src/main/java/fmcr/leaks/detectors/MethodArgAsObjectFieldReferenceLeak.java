@@ -50,6 +50,9 @@ public class MethodArgAsObjectFieldReferenceLeak extends Leak{
 	}
 
 	public String getFieldType() {
+		if(fieldType == null || isPrimitiveLeak()) {
+			return fieldName;
+		}
 		return fieldType;
 	}
 
@@ -96,7 +99,7 @@ public class MethodArgAsObjectFieldReferenceLeak extends Leak{
 
 	@Override
 	public String describe() {
-		return "<html>K<sub>"+handlerType+"</sub>K<sub>"+fieldHandlerType+"</sub>("+fieldType+")</html>";
+		return "<html>K<sub>"+handlerType+"</sub>K<sub>"+fieldHandlerType+"</sub>("+getFieldType()+")</html>";
 //		return "<html>K<sub>"+handlerType+"</sub>K<sub>"+fieldHandlerType+"</sub>("+fieldName +":"+fieldType+")</html>";
 	}
 

@@ -56,6 +56,9 @@ public class ClassObjectFieldAccessLeak extends Leak{
 		this.fieldName = fieldName;
 	}
 	public String getFieldType() {
+		if(fieldType == null || isPrimitiveLeak()) {
+			return fieldName;
+		}
 		return fieldType;
 	}
 
@@ -80,7 +83,7 @@ public class ClassObjectFieldAccessLeak extends Leak{
 
 	@Override
 	public String describe() {
-		return "<html>K<sub>"+className+"</sub>K<sub>"+fieldHandlerType+"</sub>("+fieldType+")</html>";
+		return "<html>K<sub>"+className+"</sub>K<sub>"+fieldHandlerType+"</sub>("+getFieldType()+")</html>";
 //		return "<html>K<sub>"+className+"</sub>K<sub>"+fieldHandlerType+"</sub>("+fieldName+":"+fieldType+")</html>";
 	}
 

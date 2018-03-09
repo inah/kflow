@@ -9,6 +9,7 @@ public abstract class Leak {
 	
 	public Tag tag = Tag.EMPTY;
 	private String codeSource = " ";
+	private boolean primitiveLeak = false;
 	
 	public String getLeakLine() {
 		return leakLine;
@@ -57,6 +58,16 @@ public abstract class Leak {
 
 	public void setGroupId(int groupId) {
 		this.groupId = groupId;
+	}
+
+	
+
+	public boolean isPrimitiveLeak() {
+		return primitiveLeak;
+	}
+
+	public void setPrimitiveLeak(boolean primitiveLeak) {
+		this.primitiveLeak = primitiveLeak;
 	}
 	
 }

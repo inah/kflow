@@ -35,6 +35,9 @@ public class ClassObjectCreationLeak extends Leak{
 
 
 	public String getCreatedObjectType() {
+		if(createdObjectType == null || isPrimitiveLeak()) {
+			return createdObjectName;
+		}
 		return createdObjectType;
 	}
 
@@ -59,7 +62,7 @@ public class ClassObjectCreationLeak extends Leak{
 
 	@Override
 	public String describe() {
-		return "<html>K<sub>"+className+"</sub>("+createdObjectType+")</html>";
+		return "<html>K<sub>"+className+"</sub>("+getCreatedObjectType()+")</html>";
 	}
 
 }

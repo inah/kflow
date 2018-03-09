@@ -3,17 +3,17 @@ package prol;
 public class PaySlip {
 	
 	public static void main(String ards[]) {
-//		PayInfo p = new PayInfo(new Double(1.99));
-//		PayInfo p = new PayInfo(new WorkInfo(10));
+//		PayInfo P6 = new PayInfo(new Double(1.99));
+//		PayInfo p1 = new PayInfo(new WorkInfo(10));
 //		WorkInfo w = new WorkInfo(new  Double(5));
-//		PayInfo p = new PayInfo(w);
-//		PayInfo p2 = new PayInfo(new WorkInfo(p));
-//		PayInfo p = new PayInfo(w.getHrsworked());
-//		PayInfo p = new PayInfo(WorkInfo.hrsworked);
+//		PayInfo p2 = new PayInfo(w);
+//		PayInfo p3 = new PayInfo(new WorkInfo(p));
+//		PayInfo p4 = new PayInfo(w.getHrsworked());
+//		PayInfo p5 = new PayInfo(WorkInfo.hrsworked);
 		PayInfo p = new PayInfo(WorkInfo.getHrsworked());
-		double salary = p.computeSalary(new WorkInfo(5).getHrsworked());
+//		double salary = p.computeSalary(new WorkInfo(5).getHrsworked());
 		
-//		double salary = p.computeSalary(WorkInfo.hrsworked);
+		double salary1 = p.computeSalary(WorkInfo.hrsworked);
 		
 		//DONE: double salary = p.computeSalary(w);
 		//DONE: double salary = p.computeSalary(w.getHrsworked());
