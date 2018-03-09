@@ -37,6 +37,9 @@ public class MethodArgAsObjectLeak extends Leak{
 	}
 
 	public String getParameterType() {
+		if(parameterType == null || isPrimitiveLeak()) {
+			return prameterName;
+		}
 		return parameterType;
 	}
 
@@ -54,7 +57,7 @@ public class MethodArgAsObjectLeak extends Leak{
 
 	@Override
 	public String describe() {
-		return "<html>K<sub>"+handlerType+"</sub>("+parameterType+")</html>";
+		return "<html>K<sub>"+handlerType+"</sub>("+getParameterType()+")</html>";
 //		return "<html>K<sub>"+handlerType+"</sub>("+prameterName+":"+parameterType+")</html>";
 	}
 	

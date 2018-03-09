@@ -26,7 +26,7 @@ public class CascadeObjectCreationLeak extends Leak{
 	@Override
 	public String describe() {
 		if(cascadeLeak == null) {
-			return "K<sub>"+containingObjectType+"</sub>("+containedObjectType+")";
+			return "K<sub>"+containingObjectType+"</sub>("+getContainedObjectType()+")";
 		}
 		else {
 			return "K<sub>"+containingObjectType+"</sub>"+cascadeLeak.describe();
@@ -58,6 +58,9 @@ public class CascadeObjectCreationLeak extends Leak{
 	}
 	
 	public String getContainedObjectType() {
+		if(containedObjectType == null || isPrimitiveLeak()) {
+			return containedObjectName;
+		}
 		return containedObjectType;
 	}
 }

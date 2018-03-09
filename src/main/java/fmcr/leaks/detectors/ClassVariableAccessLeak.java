@@ -35,6 +35,9 @@ public class ClassVariableAccessLeak extends Leak{
 
 
 	public String getAccessVariableType() {
+		if(accessVariableType == null || isPrimitiveLeak()) {
+			return accessVariableName;
+		}
 		return accessVariableType;
 	}
 
@@ -59,7 +62,7 @@ public class ClassVariableAccessLeak extends Leak{
 
 	@Override
 	public String describe() {
-		return "<html>K<sub>"+className+"</sub>("+accessVariableType+")</html>";
+		return "<html>K<sub>"+className+"</sub>("+getAccessVariableType()+")</html>";
 	}
 
 }

@@ -688,73 +688,100 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 				
 			}			
 			String leakline = n.getRange().get().toString();
-			ObjectFieldAccessLeak ofal = new ObjectFieldAccessLeak(id,fieldHandlerName,fieldHandlerType, fieldName, fieldType,leakline);
-			ofal.setCodeSource(sourceCode);
-			leaks.add(ofal);
-			updateKnowledgeGraph(ofal);
-			ClassObjectFieldAccessLeak cofal = new ClassObjectFieldAccessLeak(id,CodeVisitor.className, fieldHandlerName,fieldHandlerType, fieldName, fieldType,leakline);
-			cofal.setCodeSource(sourceCode);
-			leaks.add(cofal);
-			updateKnowledgeGraph(cofal);
-
-			/*
-			 * Method parameters containing Object method calls leaks
-			 * Example:
-			 * PayInfo p = new PayInfo(new Double(1.99));
-			 * WorkInfo w = new WorkInfo(new  Double(5));
-			 * double salary = p.computeSalary(w.hrsworked|WorkInfo.hrsworked);
-			 */
+			Type type = JavaParserFacade.get(ts).solve(n).getCorrespondingDeclaration().getType();
+			String reference_tx = type.describe();
+			if(!(reference_tx.startsWith("java.") ||
+			     reference_tx.startsWith("javax.") ||
+			     reference_tx.startsWith("org.omg.") ||
+  			     reference_tx.startsWith("org.w3c.dom.") ||
+			     reference_tx.startsWith("org.xml.sax."))) {
 			
-			String parentLabel = Client.getDisplay().astview.getVertexLabel(arg);
-			if(parentLabel.equals("MethodCallExpr")) {
-				Optional<Node> pn =n.getParentNode();
-				MethodCallExpr pmce =(MethodCallExpr)pn.get();
-				String reference_t = JavaParserFacade.get(ts).solve(pmce).getCorrespondingDeclaration().declaringType().getName();
-				String return_t = JavaParserFacade.get(ts).solve(pmce).getCorrespondingDeclaration().getReturnType().describe();
-				String method_name = JavaParserFacade.get(ts).solve(pmce).getCorrespondingDeclaration().getName();
-				MethodArgAsObjectFieldReferenceLeak maaofrl = new MethodArgAsObjectFieldReferenceLeak(id,reference_t,method_name, return_t,fieldHandlerName,fieldHandlerType, fieldType,fieldName,leakline);
-				maaofrl.setCodeSource(sourceCode);
-				leaks.add(maaofrl);
-				updateKnowledgeGraph(maaofrl);
-				ClassMethodArgAsObjectFieldReferenceLeak cmaaofrl = new ClassMethodArgAsObjectFieldReferenceLeak(id,CodeVisitor.className,reference_t,method_name, return_t,fieldHandlerName,fieldHandlerType, fieldType,fieldName,leakline);
-				cmaaofrl.setCodeSource(sourceCode);
-				leaks.add(cmaaofrl);
-				updateKnowledgeGraph(cmaaofrl);
+				ObjectFieldAccessLeak ofal = new ObjectFieldAccessLeak(id,fieldHandlerName,fieldHandlerType, fieldName, fieldType,leakline);
+				ofal.setCodeSource(sourceCode);
+				if(type.isPrimitive()) {
+					ofal.setPrimitiveLeak(true);
+				}
+				leaks.add(ofal);
+				updateKnowledgeGraph(ofal);
+				ClassObjectFieldAccessLeak cofal = new ClassObjectFieldAccessLeak(id,CodeVisitor.className, fieldHandlerName,fieldHandlerType, fieldName, fieldType,leakline);
+				cofal.setCodeSource(sourceCode);
+				if(type.isPrimitive()) {
+					cofal.setPrimitiveLeak(true);
+				}
+				leaks.add(cofal);
+				updateKnowledgeGraph(cofal);
+
+				/*
+				 * Method parameters containing Object method calls leaks
+				 * Example:
+				 * PayInfo p = new PayInfo(new Double(1.99));
+				 * WorkInfo w = new WorkInfo(new  Double(5));
+				 * double salary = p.computeSalary(w.hrsworked|WorkInfo.hrsworked);
+				 */
+				
+				String parentLabel = Client.getDisplay().astview.getVertexLabel(arg);
+				if(parentLabel.equals("MethodCallExpr")) {
+					Optional<Node> pn =n.getParentNode();
+					MethodCallExpr pmce =(MethodCallExpr)pn.get();
+					String reference_t = JavaParserFacade.get(ts).solve(pmce).getCorrespondingDeclaration().declaringType().getName();
+					String return_t = JavaParserFacade.get(ts).solve(pmce).getCorrespondingDeclaration().getReturnType().describe();
+					String method_name = JavaParserFacade.get(ts).solve(pmce).getCorrespondingDeclaration().getName();
+					MethodArgAsObjectFieldReferenceLeak maaofrl = new MethodArgAsObjectFieldReferenceLeak(id,reference_t,method_name, return_t,fieldHandlerName,fieldHandlerType, fieldType,fieldName,leakline);
+					maaofrl.setCodeSource(sourceCode);
+					if(type.isPrimitive()) {
+						maaofrl.setPrimitiveLeak(true);
+					}
+					leaks.add(maaofrl);
+					updateKnowledgeGraph(maaofrl);
+					ClassMethodArgAsObjectFieldReferenceLeak cmaaofrl = new ClassMethodArgAsObjectFieldReferenceLeak(id,CodeVisitor.className,reference_t,method_name, return_t,fieldHandlerName,fieldHandlerType, fieldType,fieldName,leakline);
+					cmaaofrl.setCodeSource(sourceCode);
+					if(type.isPrimitive()) {
+						cmaaofrl.setPrimitiveLeak(true);
+					}
+					leaks.add(cmaaofrl);
+					updateKnowledgeGraph(cmaaofrl);
+				}
+				
+				/*
+				 * Object creation with method call parameters
+				 * Example:
+				 * PayInfo p = new PayInfo(w.getHrsworked());
+				 */
+
+				String parentId = Client.getDisplay().astview.getParentIdentifier(id);
+				String parentLabelLoc = Client.getDisplay().astview.getVertexLabel(parentId);
+				if(parentLabelLoc.contains("ObjectCreationExpr")) {
+					ClassCascadingObjectCreationLeak cascadingLeak = new ClassCascadingObjectCreationLeak(id, CodeVisitor.className, leakline);
+					while(parentLabelLoc.equals("ObjectCreationExpr")) {
+						String containingObjectType = createdObjectTypes.get(parentId);
+//						CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,fieldHandlerType, null,containingObjectType, leakline);
+//						CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,fieldName, null,containingObjectType, leakline);
+//						CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,fieldHandlerType+":"+fieldName, null,containingObjectType, leakline);
+						
+						CascadeObjectCreation cascade1 = new CascadeObjectCreation(id,parentId,null,fieldHandlerType, null,containingObjectType, leakline);
+						CascadeObjectCreation cascade2 = new CascadeObjectCreation(id,parentId,null,fieldName, null,fieldHandlerType, leakline);
+						
+						cascadingLeak.addObjectCreation(cascade1);
+						cascadingLeak.addObjectCreation(cascade2);
+						
+						parentId = Client.getDisplay().astview.getParentIdentifier(parentId);//get grandparent
+						parentLabelLoc = Client.getDisplay().astview.getVertexLabel(parentId);					
+					}
+						
+					ArrayList<CascadeObjectCreationLeak> cascadeLeaks = cascadingLeak.extractLeaks();
+					for(CascadeObjectCreationLeak leak: cascadeLeaks) {
+						leak.setCodeSource(sourceCode);
+						if(type.isPrimitive()) {
+							leak.setPrimitiveLeak(true);
+						}
+						leaks.add(leak);	
+						updateKnowledgeGraph(leak);
+					}
+				}
 			}
 			
-			/*
-			 * Object creation with method call parameters
-			 * Example:
-			 * PayInfo p = new PayInfo(w.getHrsworked());
-			 */
-
-			String parentId = Client.getDisplay().astview.getParentIdentifier(id);
-			String parentLabelLoc = Client.getDisplay().astview.getVertexLabel(parentId);
-			if(parentLabelLoc.contains("ObjectCreationExpr")) {
-				ClassCascadingObjectCreationLeak cascadingLeak = new ClassCascadingObjectCreationLeak(id, CodeVisitor.className, leakline);
-				while(parentLabelLoc.equals("ObjectCreationExpr")) {
-					String containingObjectType = createdObjectTypes.get(parentId);
-//					CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,fieldHandlerType, null,containingObjectType, leakline);
-//					CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,fieldName, null,containingObjectType, leakline);
-//					CascadeObjectCreation cascade = new CascadeObjectCreation(id,parentId,null,fieldHandlerType+":"+fieldName, null,containingObjectType, leakline);
-					
-					CascadeObjectCreation cascade1 = new CascadeObjectCreation(id,parentId,null,fieldHandlerType, null,containingObjectType, leakline);
-					CascadeObjectCreation cascade2 = new CascadeObjectCreation(id,parentId,null,fieldName, null,fieldHandlerType, leakline);
-					
-					cascadingLeak.addObjectCreation(cascade1);
-					cascadingLeak.addObjectCreation(cascade2);
-					
-					parentId = Client.getDisplay().astview.getParentIdentifier(parentId);//get grandparent
-					parentLabelLoc = Client.getDisplay().astview.getVertexLabel(parentId);					
-				}
-					
-				ArrayList<CascadeObjectCreationLeak> cascadeLeaks = cascadingLeak.extractLeaks();
-				for(CascadeObjectCreationLeak leak: cascadeLeaks) {
-					leak.setCodeSource(sourceCode);
-					leaks.add(leak);	
-					updateKnowledgeGraph(leak);
-				}
-			}
+			
+			
 			//
 //			
 
@@ -1012,10 +1039,16 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 				 */
 				MethodCallLeak mcl = new MethodCallLeak(id,reference_t,method_name, return_t, leakline);
 				mcl.setCodeSource(sourceCode);
+				if(type.isPrimitive()) {
+					mcl.setPrimitiveLeak(true);
+				}
 				leaks.add(mcl);
 				updateKnowledgeGraph(mcl);
 				ClassMethodCallLeak cmcl = new ClassMethodCallLeak(id,CodeVisitor.className,reference_t,method_name, return_t, leakline);
 				cmcl.setCodeSource(sourceCode);
+				if(type.isPrimitive()) {
+					cmcl.setPrimitiveLeak(true);
+				}
 				leaks.add(cmcl);
 				updateKnowledgeGraph(cmcl);
 				
@@ -1041,10 +1074,16 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 					}
 					MethodArgAsObjectMethodCallLeak mcpl = new MethodArgAsObjectMethodCallLeak(id,reference_t,method_name, return_t, leakline,mhandle);
 					mcpl.setCodeSource(sourceCode);
+					if(type.isPrimitive()) {
+						mcpl.setPrimitiveLeak(true);
+					}
 					leaks.add(mcpl);
 					updateKnowledgeGraph(mcpl);
 					ClassMethodArgAsObjectMethodCallLeak cmcpl = new ClassMethodArgAsObjectMethodCallLeak(id,CodeVisitor.className,reference_t,method_name, return_t, leakline,mhandle);
 					cmcpl.setCodeSource(sourceCode);
+					if(type.isPrimitive()) {
+						cmcpl.setPrimitiveLeak(true);
+					}
 					leaks.add(cmcpl);
 					updateKnowledgeGraph(cmcpl);
 					
@@ -1066,8 +1105,7 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 				ParameterDeclaration param = JavaParserFacade.get(ts).solve(n).getCorrespondingDeclaration().getParam(i);
 				String paramName = param.getName();
 				String paramType = param.describeType();				
-				if(!(param.getType().isPrimitive()||
-						paramType.startsWith("java.") ||
+				if(!(paramType.startsWith("java.") ||
 						paramType.startsWith("javax.") ||
 						paramType.startsWith("org.omg.") ||
 						paramType.startsWith("org.w3c.dom.") ||
@@ -1079,10 +1117,16 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 					}
 					MethodArgAsObjectLeak maaol = new MethodArgAsObjectLeak(id,reference_t,paramType,paramName,leakline);
 					maaol.setCodeSource(sourceCode);
+					if(type.isPrimitive()) {
+						maaol.setPrimitiveLeak(true);
+					}
 					leaks.add(maaol);
 					updateKnowledgeGraph(maaol);
 					ClassMethodArgAsObjectLeak cmaaol = new ClassMethodArgAsObjectLeak(id,CodeVisitor.className,reference_t,paramType,paramName,leakline);
 					cmaaol.setCodeSource(sourceCode);
+					if(type.isPrimitive()) {
+						cmaaol.setPrimitiveLeak(true);
+					}
 					leaks.add(cmaaol);	
 					updateKnowledgeGraph(cmaaol);
 					
@@ -1121,6 +1165,9 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 				for(CascadeObjectCreationLeak leak: cascadeLeaks) {
 					leak.tag = Tag.F;
 					leak.setCodeSource(sourceCode);
+					if(type.isPrimitive()) {
+						leak.setPrimitiveLeak(true);
+					}
 					leaks.add(leak);	
 					updateKnowledgeGraph(leak);
 				}
@@ -1172,8 +1219,7 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 			// attempt to get type
 			Type type = JavaParserFacade.get( ts ).getType( n );
 			String reference_tx = type.describe();
-			if(!(type.isPrimitive()||
-				 reference_tx.startsWith("java.") ||
+			if(!(reference_tx.startsWith("java.") ||
 			     reference_tx.startsWith("javax.") ||
 			     reference_tx.startsWith("org.omg.") ||
   			     reference_tx.startsWith("org.w3c.dom.") ||
@@ -1197,6 +1243,9 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 				String leakline = n.getRange().get().toString();
 				ClassVariableAccessLeak cocl = new ClassVariableAccessLeak(id,null,accessVariableType, CodeVisitor.className, leakline);
 				cocl.setCodeSource(sourceCode);
+				if(type.isPrimitive()) {
+					cocl.setPrimitiveLeak(true);
+				}
 				leaks.add(cocl);	
 				updateKnowledgeGraph(cocl);
 				
@@ -1222,6 +1271,9 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 						
 					ArrayList<CascadeObjectCreationLeak> cascadeLeaks = cascadingLeak.extractLeaks();
 					for(CascadeObjectCreationLeak leak: cascadeLeaks) {
+						if(type.isPrimitive()) {
+							leak.setPrimitiveLeak(true);
+						}
 						leak.setCodeSource(sourceCode);
 						leaks.add(leak);	
 						updateKnowledgeGraph(leak);
@@ -1286,8 +1338,7 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 		try {
 			Type type = JavaParserFacade.get( ts ).getType( n );
 			String reference_tx = type.describe();			
-			if(!(type.isPrimitive()||
-					reference_tx.startsWith("java.") ||
+			if(!(	reference_tx.startsWith("java.") ||
 					reference_tx.startsWith("javax.") ||
 					reference_tx.startsWith("org.omg.") ||
 					reference_tx.startsWith("org.w3c.dom.") ||
@@ -1301,6 +1352,9 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 				String createdObjectType = JavaParserFacade.get(ts).solve(n).getCorrespondingDeclaration().declaringType().getName();
 				String leakline = n.getRange().get().toString();
 				ClassObjectCreationLeak cocl = new ClassObjectCreationLeak(id,null,createdObjectType, CodeVisitor.className, leakline);
+				if(type.isPrimitive()) {
+					cocl.setPrimitiveLeak(true);
+				}
 				cocl.setCodeSource(sourceCode);
 				createdObjectTypes.put(id, createdObjectType);
 				
@@ -1330,6 +1384,9 @@ public class CodeVisitor extends VoidVisitorAdapter<String>{
 						
 					ArrayList<CascadeObjectCreationLeak> cascadeLeaks = cascadingLeak.extractLeaks();
 					for(CascadeObjectCreationLeak leak: cascadeLeaks) {
+						if(type.isPrimitive()) {
+							leak.setPrimitiveLeak(true);
+						}
 						leak.setCodeSource(sourceCode);
 						leaks.add(leak);		
 						updateKnowledgeGraph(leak);
