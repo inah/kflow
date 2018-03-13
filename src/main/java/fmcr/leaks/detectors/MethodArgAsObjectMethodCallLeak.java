@@ -44,6 +44,9 @@ public class MethodArgAsObjectMethodCallLeak extends MethodLeak{
 	}
 
 	public String getMethodReturnType() {
+		if(methodReturnType == null || isPrimitiveLeak()) {
+			return methodName;
+		}
 		return methodReturnType;
 	}
 
@@ -68,7 +71,7 @@ public class MethodArgAsObjectMethodCallLeak extends MethodLeak{
 	public ArrayList<String> multiDescribe() {
 		ArrayList<String> desc = new ArrayList<String>();
 		if(!methodReturnType.equalsIgnoreCase("void")) {
-			String s1 = "<html>K<sub>"+parameterType+"</sub>K<sub>"+handlerType+"</sub>("+methodReturnType+")</html>";
+			String s1 = "<html>K<sub>"+parameterType+"</sub>K<sub>"+handlerType+"</sub>("+getMethodReturnType()+")</html>";
 			desc.add(s1);
 		}
 		String s2 = "<html>K<sub>"+parameterType+"</sub>K<sub>"+handlerType+"</sub>("+methodName+")</html>";

@@ -104,7 +104,9 @@ public class TypeInputSourcesDialog extends javax.swing.JPanel{
     private static String selectedRepoSrc = "";
     private void SourceCodeTypeSolverRootDirButtonAction(java.awt.event.ActionEvent evt) {                                              
     		JFileChooser chooser = new JFileChooser();
-		chooser.setCurrentDirectory(new java.io.File("."));
+    		if(Client.getDisplay().selectedFile !=null) {
+    			chooser.setCurrentDirectory(Client.getDisplay().selectedFile);    			
+    		}
 		chooser.setDialogTitle("SourceCodeTypeSolverRootDirDir");
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//.FILES_AND_DIRECTORIES);
 		
@@ -118,7 +120,8 @@ public class TypeInputSourcesDialog extends javax.swing.JPanel{
 				srcDependencies = new ArrayList<File>();			
 				File file = chooser.getSelectedFile();
 				srcDependencies.add(file);
-				
+				Client.getDisplay().selectedFile = file;
+
 //				Client.getDisplay().updateLogPage("src dependencies:"+selectedRepoSrc, false);
 				Display.updateProgressComponent(100,"");
 			}
@@ -159,37 +162,6 @@ public class TypeInputSourcesDialog extends javax.swing.JPanel{
 		}
 	}
 	
-//	private void crawlJavaFiles(File[] files) {
-//		
-//		c = c +files.length;
-//
-//		for (File file : files) {
-//			if (file.isDirectory()) {
-//				crawlJavaFiles(file.listFiles());
-//			} else {
-//				String[] s = file.toString().split(Pattern.quote("."));
-//				if(s.length >1) {
-//					if (s[s.length-1].equals("java")) {
-//						boolean contained = false;
-//						for(File f:srcDependencies) {
-//							if(f.getPath().equals(file.getParentFile().getPath())) {
-//								contained = true;
-//								break;
-//							}
-//						}
-//						if(!contained) {
-//							srcDependencies.add(file.getParentFile());
-//							Client.getDisplay().updateLogPage(file.getParentFile().getPath(), false);						
-//						}
-//						p = p+1;
-//						double pc = (p/c)*100;
-//
-//						Display.updateProgressComponent(new Double(pc).intValue(),df.format(pc)+"%");
-//					}
-//				}				
-//			}
-//		}
-//	}
 
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

@@ -12,6 +12,7 @@ import fmcr.leaks.detectors.ClassMethodCallLeak;
 import fmcr.leaks.detectors.ClassObjectCreationLeak;
 import fmcr.leaks.detectors.ClassObjectFieldAccessLeak;
 import fmcr.leaks.detectors.ClassVariableAccessLeak;
+import fmcr.leaks.detectors.ClassVariableLeak;
 import fmcr.leaks.detectors.Leak;
 import fmcr.leaks.detectors.MethodArgAsObjectFieldReferenceLeak;
 import fmcr.leaks.detectors.MethodArgAsObjectLeak;
@@ -100,7 +101,7 @@ public class KnowledgeGraph {
 			Edge edge_ = (Edge)iter.next();
 			String elabel = (String)edge_.get(LABEL);
 			if(elabel.equals(stlabel)) {
-				int esize = (Integer)edge_.get(EDGESIZE);
+				Integer esize = (Integer)edge_.get(EDGESIZE);
 				esize = esize +1;
 				edge_.set(EDGESIZE, esize);
 				edge = edge_;
@@ -281,6 +282,12 @@ public class KnowledgeGraph {
 			String node1Name = ((ClassVariableAccessLeak) r).getClassName();
 			String node2Name = ((ClassVariableAccessLeak) r).getAccessVariableType();
 			addCallEdge(node1Name,node2Name,r);			
+		}
+		else if(r instanceof ClassVariableLeak){
+			r  = (ClassVariableLeak)r;
+			String node1Name = ((ClassVariableLeak) r).getClassName();
+			String node2Name = ((ClassVariableLeak) r).getVariableType();
+			addCallEdge(node1Name,node2Name,r);	
 		}
 
 		return rnodes;

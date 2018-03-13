@@ -213,6 +213,7 @@ public class KnowledgeGraphView extends Display{
 		}
 		Integer elabeli = (Integer)KnowledgeGraph.focusEdge.get(KnowledgeGraph.EDGESIZE);
 		String elabel = elabeli.toString();
+		
 		KnowledgeGraph.focusEdge.setString(VisualItem.LABEL, elabel);
 		
 		if(leak.getGroupId() != cgid) {

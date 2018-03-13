@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -36,6 +37,10 @@ public class Client {
 	public static ArrayList<File> sourceFiles;
 	public static boolean isDir;
 	
+	public static String [] protocolSuite;
+	public static String [] evaluatedProtocols;
+	public static HashMap<String, Double> protocolCost;
+
 	public static boolean isSourceFileLoaded() {
 		return sourceFileLoaded;
 	}

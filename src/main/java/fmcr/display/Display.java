@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
@@ -52,6 +53,8 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import com.mxgraph.view.mxGraphView;
 
 import fmcr.display.flowgraph.KnowledgeGraphView;
+import fmcr.display.model.ProtocolFactory;
+import fmcr.display.model.ProtocolView;
 import fmcr.main.Client;
 import fmcr.main.ResourceLoader;
 
@@ -76,7 +79,7 @@ public class Display extends JFrame {
 	// <editor-fold defaultstate="collapsed" desc="Generated Code">                          
 	private void initComponents() throws IOException {
 		this.setResizable(true);
-		this.setTitle("PILAPS:Private Information Leak Analysis in Program Sources");
+		this.setTitle("Dipro:Verifying Information Disclosure Protocols in Object Oriented Software");
 		jSplitPane1 = new javax.swing.JSplitPane();
 		jSplitPane2 = new javax.swing.JSplitPane();
 
@@ -87,7 +90,8 @@ public class Display extends JFrame {
 		jScrollPane1.setViewportView(logTextPane);
 		jTabbedPane1.addTab("Logs", jScrollPane1);
 		jTabbedPane1.addTab("InformationLeaks", createLeaksPage());
-		jTabbedPane1.addTab("Cross-Cutting Privacy Concerns",null);
+		jTabbedPane1.addTab("disclosure protocol suite", createProtocolPage());
+		jTabbedPane1.addTab("privacy requirements", null);//createAssertionsPage());
 		
 		astPanel = new JPanel(new BorderLayout());
 		JPanel zoompanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
@@ -237,6 +241,9 @@ public class Display extends JFrame {
 				);
 
 		pack();
+		
+		updateProtocolPage();
+
 	}
 	
 	private JPanel infopf = new  JPanel();
@@ -291,6 +298,31 @@ public class Display extends JFrame {
 		}
 		jTabbedPane1.setSelectedIndex(1);
 	}
+	
+	private static JPanel protocolPanel;	
+	public JComponent createProtocolPage(){
+		protocolPanel = new JPanel(new BorderLayout(0,0));	
+		
+		ProtocolView pv = new ProtocolView();
+		protocolPanel.add(pv,BorderLayout.CENTER);
+		
+		return protocolPanel;
+	}
+	
+	public static void updateProtocolPage(){
+
+		Thread queryThread = new Thread() {
+			public void run() {
+				protocolPanel.removeAll();				
+				ProtocolView psView = new ProtocolView();				
+				protocolPanel.add(psView,BorderLayout.CENTER);
+				ProtocolFactory.displayProtocols(psView);
+			}
+		};
+		queryThread.start();
+		
+	}
+		
 
 	private void typeSolverSetup() {
 		TypeInputSourcesDialog sourceInput_d = new TypeInputSourcesDialog();
@@ -387,13 +419,16 @@ public class Display extends JFrame {
 		}
 	}
 	
+	File selectedFile;
 	/**
 	 * Reads a local folder to select .java files for program analysis 
 	 * user can select from <code>1</code> to <code>n</code>.java files
 	 */
 	public void readLocalRepository() {
 		JFileChooser chooser = new JFileChooser();
-		chooser.setCurrentDirectory(new java.io.File("."));
+		if(selectedFile!=null) {
+			chooser.setCurrentDirectory(selectedFile);
+		}
 		chooser.setDialogTitle("Select source file/directory to analyse");
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);//.FILES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
@@ -407,7 +442,7 @@ public class Display extends JFrame {
 					astview.setVisible(false);
 					
 					BufferedReader buff = null;
-					File selectedFile = chooser.getSelectedFile();
+					selectedFile = chooser.getSelectedFile();
 					
 					if(selectedFile.isDirectory()) {
 						Client.isDir = true;
